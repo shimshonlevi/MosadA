@@ -12,6 +12,7 @@ namespace Mosad1.Data
         public Mosad1Context (DbContextOptions<Mosad1Context> options)
             : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public DbSet<Mosad1.Models.Agent> Agent { get; set; } = default!;
