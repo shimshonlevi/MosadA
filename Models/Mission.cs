@@ -4,7 +4,7 @@ namespace Mosad1.Models
 {
     public class Mission
     {
-        [Key]
+        //[Key]
         public int ID { get; set; }
         public int AgentID { get; set; }
         public Agent Agent { get; set; }

@@ -4,7 +4,7 @@ namespace Mosad1.Models
 {
     public class Agent
     {
-        [Key]
+        //[Key]
         public int ID { get; set; }
         public string ImageUrl { get; set; }
         public string Alias { get; set; }
