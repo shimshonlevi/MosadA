@@ -16,5 +16,7 @@ namespace Mosad1.Data
         }
 
         public DbSet<Mosad1.Models.Agent> Agent { get; set; } = default!;
+        public DbSet<Mosad1.Models.Mission> Mission { get; set; } = default!;
+        public DbSet<Mosad1.Models.Target> Target { get; set; } = default!;
     }
 }
