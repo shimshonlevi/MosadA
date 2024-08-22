@@ -25,6 +25,7 @@ namespace Mosad1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Target>>> GetTarget()
         {
+            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
             return await _context.Target.ToListAsync();
         }
 
@@ -32,6 +33,7 @@ namespace Mosad1.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Target>> GetTarget(int id)
         {
+            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
             var target = await _context.Target.FindAsync(id);
 
             if (target == null)
@@ -44,19 +46,24 @@ namespace Mosad1.Controllers
 
         // PUT: api/Targets/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTarget(int id, Target target)
+        [HttpPut("{id}/pin")]
+        public async Task<IActionResult> PutTarget(int id, Location location)
         {
-            if (id != target.ID)
+            if (location == null)
             {
                 return BadRequest();
             }
-
-            _context.Entry(target).State = EntityState.Modified;
+           
+            Target target = await _context.Target.FindAsync(id);
+            target.Location = location;
+            
+            _context.Update(target);
+           
 
             try
             {
                 await _context.SaveChangesAsync();
+      
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -81,7 +88,7 @@ namespace Mosad1.Controllers
             _context.Target.Add(target);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTarget", new { id = target.ID }, target);
+            return CreatedAtAction("GetTarget", new { id = target.ID });
         }
 
         // DELETE: api/Targets/5
