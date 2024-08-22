@@ -15,10 +15,12 @@ namespace Mosad1.Controllers
     public class TargetsController : ControllerBase
     {
         private readonly Mosad1Context _context;
+        //private DirectionServis _directionServis;
 
         public TargetsController(Mosad1Context context)
         {
             _context = context;
+            //_directionServis = directionServis;
         }
 
         // GET: api/Targets
@@ -90,6 +92,40 @@ namespace Mosad1.Controllers
 
             return CreatedAtAction("GetTarget", new { id = target.ID });
         }
+        [HttpPut("{id}/move")]
+        public async Task<ActionResult<Target>> MoveTarget(int id ,Direction  direction)
+        {
+            if (direction == null)
+            {
+                return BadRequest();
+            }
+            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
+            Target target = await _context.Target.FindAsync(id);
+            
+            target.Location = DirectionServis.moveDurection(target,direction);
+
+            _context.Update(target);
+            try
+            {
+                await _context.SaveChangesAsync();
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TargetExists(id))
+                {
+                    return NotFound();
+                 }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(target.Location);
+
+        }
+
 
         // DELETE: api/Targets/5
         [HttpDelete("{id}")]
