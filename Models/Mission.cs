@@ -1,15 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mosad1.Models
 {
     public class Mission
     {
-        //[Key]
+        [Key]
         public int ID { get; set; }
+        [ForeignKey("Agent")]
         public int AgentID { get; set; }
-        public Agent Agent { get; set; }
+        [ForeignKey("Target")]
         public int TargetID { get; set; }
-        public Target Target { get; set; }
         public double TimeLeft { get; set; }
         public string Status { get; set; }
     }
