@@ -25,6 +25,7 @@ namespace Mosad1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Agent>>> GetAgent()
         {
+            var agents = await _context.Agent.Include(t => t.Location)?.ToArrayAsync();
             return await _context.Agent.ToListAsync();
         }
 
@@ -32,6 +33,7 @@ namespace Mosad1.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Agent>> GetAgent(int id)
         {
+            var agents = await _context.Agent.Include(t => t.Location)?.ToArrayAsync();
             var agent = await _context.Agent.FindAsync(id);
 
             if (agent == null)
@@ -44,15 +46,18 @@ namespace Mosad1.Controllers
 
         // PUT: api/Agents/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAgent(int id, Agent agent)
+        [HttpPut("{id}/pin")]
+        public async Task<IActionResult> PutAgent(int id, Location location)
         {
-            if (id != agent.ID)
+            if (location == null)
             {
                 return BadRequest();
             }
+            var agents = await _context.Agent.Include(t => t.Location)?.ToArrayAsync();
+            Agent agent = await _context.Agent.FindAsync(id);
+            agent.Location = location;
 
-            _context.Entry(agent).State = EntityState.Modified;
+            _context.Update(agent);
 
             try
             {
@@ -71,6 +76,61 @@ namespace Mosad1.Controllers
             }
 
             return NoContent();
+        }
+        [HttpPut("{id}/move")]
+        public async Task<ActionResult<Agent>> MoveTarget(int id, Direction direction)
+        {
+            if (direction == null)
+            {
+                return BadRequest("Direction cannot be null.");
+            }
+
+
+            var agent = await _context.Agent.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == id);
+            if (agent == null)
+            {
+                return NotFound();
+            }
+
+
+            var originalLocation = new { agent.Location.x, agent.Location.y };
+
+
+            agent.Location = DirectionServis.moveDurection(agent.Location, direction);
+
+
+            if (agent.Location.y > 1000 || agent.Location.x > 1000 || agent.Location.y < 0 || agent.Location.x < 0)
+            {
+
+                return BadRequest(new
+                {
+                    Message = "Cannot move target out of bounds.",
+                    Location = originalLocation
+                });
+            }
+
+
+            _context.Update(agent);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AgentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return StatusCode(
+                StatusCodes.Status200OK,
+                new { agent.Location.x, agent.Location.y }
+            );
         }
 
         // POST: api/Agents

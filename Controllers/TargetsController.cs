@@ -55,7 +55,7 @@ namespace Mosad1.Controllers
             {
                 return BadRequest();
             }
-           
+            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
             Target target = await _context.Target.FindAsync(id);
             target.Location = location;
             
@@ -93,38 +93,61 @@ namespace Mosad1.Controllers
             return CreatedAtAction("GetTarget", new { id = target.ID });
         }
         [HttpPut("{id}/move")]
-        public async Task<ActionResult<Target>> MoveTarget(int id ,Direction  direction)
+        public async Task<ActionResult<Target>> MoveTarget(int id, Direction direction)
         {
             if (direction == null)
             {
-                return BadRequest();
+                return BadRequest("Direction cannot be null.");
             }
-            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
-            Target target = await _context.Target.FindAsync(id);
-            
-            target.Location = DirectionServis.moveDurection(target,direction);
 
+          
+            var target = await _context.Target.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == id);
+            if (target == null)
+            {
+                return NotFound();
+            }
+
+          
+            var originalLocation = new { target.Location.x, target.Location.y };
+
+        
+            target.Location = DirectionServis.moveDurection(target.Location, direction);
+
+         
+            if (target.Location.y > 1000 || target.Location.x > 1000 || target.Location.y < 0 || target.Location.x < 0)
+            {
+       
+                return BadRequest(new
+                {
+                    Message = "Cannot move target out of bounds.",
+                    Location = originalLocation
+                });
+            }
+
+      
             _context.Update(target);
             try
             {
                 await _context.SaveChangesAsync();
-
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!TargetExists(id))
                 {
                     return NotFound();
-                 }
+                }
                 else
                 {
                     throw;
                 }
             }
 
-            return Ok(target.Location);
-
+            return StatusCode(
+                StatusCodes.Status200OK,
+                new { target.Location.x, target.Location.y }
+            );
         }
+
 
 
         // DELETE: api/Targets/5

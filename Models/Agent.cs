@@ -10,6 +10,6 @@ namespace Mosad1.Models
         public string Alias { get; set; }
 
         public Location ? Location { get; set; }
-        public string Status { get; set; }
+        public string? Status { get; set; }
     }
 }
