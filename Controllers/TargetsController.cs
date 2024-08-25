@@ -27,16 +27,16 @@ namespace Mosad1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Target>>> GetTarget()
         {
-            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
-            return await _context.Target.ToListAsync();
+            var targets = await _context.Targets.Include(t => t.Location)?.ToArrayAsync();
+            return await _context.Targets.ToListAsync();
         }
 
         // GET: api/Targets/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Target>> GetTarget(int id)
         {
-            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
-            var target = await _context.Target.FindAsync(id);
+            var targets = await _context.Targets.Include(t => t.Location)?.ToArrayAsync();
+            var target = await _context.Targets.FindAsync(id);
 
             if (target == null)
             {
@@ -55,8 +55,8 @@ namespace Mosad1.Controllers
             {
                 return BadRequest();
             }
-            var targets = await _context.Target.Include(t => t.Location)?.ToArrayAsync();
-            Target target = await _context.Target.FindAsync(id);
+            var targets = await _context.Targets.Include(t => t.Location)?.ToArrayAsync();
+            Target target = await _context.Targets.FindAsync(id);
             target.Location = location;
             
             _context.Update(target);
@@ -87,7 +87,7 @@ namespace Mosad1.Controllers
         [HttpPost]
         public async Task<ActionResult<Target>> PostTarget(Target target)
         {
-            _context.Target.Add(target);
+            _context.Targets.Add(target);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTarget", new { id = target.ID });
@@ -101,7 +101,7 @@ namespace Mosad1.Controllers
             }
 
           
-            var target = await _context.Target.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == id);
+            var target = await _context.Targets.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == id);
             if (target == null)
             {
                 return NotFound();
@@ -154,13 +154,13 @@ namespace Mosad1.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTarget(int id)
         {
-            var target = await _context.Target.FindAsync(id);
+            var target = await _context.Targets.FindAsync(id);
             if (target == null)
             {
                 return NotFound();
             }
 
-            _context.Target.Remove(target);
+            _context.Targets.Remove(target);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -168,7 +168,7 @@ namespace Mosad1.Controllers
 
         private bool TargetExists(int id)
         {
-            return _context.Target.Any(e => e.ID == id);
+            return _context.Targets.Any(e => e.ID == id);
         }
     }
 }

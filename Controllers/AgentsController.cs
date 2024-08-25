@@ -25,16 +25,16 @@ namespace Mosad1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Agent>>> GetAgent()
         {
-            var agents = await _context.Agent.Include(t => t.Location)?.ToArrayAsync();
-            return await _context.Agent.ToListAsync();
+            var agents = await _context.Agents.Include(t => t.Location)?.ToArrayAsync();
+            return await _context.Agents.ToListAsync();
         }
 
         // GET: api/Agents/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Agent>> GetAgent(int id)
         {
-            var agents = await _context.Agent.Include(t => t.Location)?.ToArrayAsync();
-            var agent = await _context.Agent.FindAsync(id);
+            var agents = await _context.Agents.Include(t => t.Location)?.ToArrayAsync();
+            var agent = await _context.Agents.FindAsync(id);
 
             if (agent == null)
             {
@@ -53,8 +53,8 @@ namespace Mosad1.Controllers
             {
                 return BadRequest();
             }
-            var agents = await _context.Agent.Include(t => t.Location)?.ToArrayAsync();
-            Agent agent = await _context.Agent.FindAsync(id);
+            var agents = await _context.Agents.Include(t => t.Location)?.ToArrayAsync();
+            Agent agent = await _context.Agents.FindAsync(id);
             agent.Location = location;
 
             _context.Update(agent);
@@ -86,7 +86,7 @@ namespace Mosad1.Controllers
             }
 
 
-            var agent = await _context.Agent.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == id);
+            var agent = await _context.Agents.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == id);
             if (agent == null)
             {
                 return NotFound();
@@ -138,7 +138,7 @@ namespace Mosad1.Controllers
         [HttpPost]
         public async Task<ActionResult<Agent>> PostAgent(Agent agent)
         {
-            _context.Agent.Add(agent);
+            _context.Agents.Add(agent);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetAgent", new { id = agent.ID }, agent);
@@ -148,13 +148,13 @@ namespace Mosad1.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAgent(int id)
         {
-            var agent = await _context.Agent.FindAsync(id);
+            var agent = await _context.Agents.FindAsync(id);
             if (agent == null)
             {
                 return NotFound();
             }
 
-            _context.Agent.Remove(agent);
+            _context.Agents.Remove(agent);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -162,7 +162,7 @@ namespace Mosad1.Controllers
 
         private bool AgentExists(int id)
         {
-            return _context.Agent.Any(e => e.ID == id);
+            return _context.Agents.Any(e => e.ID == id);
         }
     }
 }
