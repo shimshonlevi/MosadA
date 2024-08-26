@@ -15,10 +15,12 @@ namespace Mosad1.Controllers
     public class AgentsController : ControllerBase
     {
         private readonly Mosad1Context _context;
+        private readonly missonServis _missonServis;
 
-        public AgentsController(Mosad1Context context)
+        public AgentsController(Mosad1Context context, missonServis missonServis)
         {
             _context = context;
+            _missonServis = missonServis;
         }
 
         // GET: api/Agents
@@ -56,7 +58,11 @@ namespace Mosad1.Controllers
             var agents = await _context.Agents.Include(t => t.Location)?.ToArrayAsync();
             Agent agent = await _context.Agents.FindAsync(id);
             agent.Location = location;
-
+            await Task.Run(async () =>
+            {
+                await this._missonServis.CalculateMissionA(agent);
+            });
+          
             _context.Update(agent);
 
             try
@@ -113,6 +119,7 @@ namespace Mosad1.Controllers
             _context.Update(agent);
             try
             {
+                this._missonServis.CalculateMissionA(agent);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)

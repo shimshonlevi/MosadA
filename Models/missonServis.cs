@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using Mosad1.Data;
 using Mosad1.Enums;
 using Mosad1.Models;
@@ -22,36 +23,47 @@ namespace Mosad1.Models
 
 
         }
-        public double GetDistance(Location loc1, Location loc2)
+        public double GetDistance(Location location1, Location location2)
         {
-            return _distanceCalculate.CalculateDistance(loc1, loc2);
+            return _distanceCalculate.CalculateDistance(location1, location2);
         }
-        // לנסות לחבר את הפונקציה של המרחק לללמטה
-        public void CalculateMissionA(Agent agent)
+      
+        public async Task CalculateMissionA(Agent agent)
         {
-            var targets = _context.Targets.ToList();
+
+            //var targets = await _context.Targets.ToListAsync();
+            var targets = await _context.Targets.Include(t => t.Location)?.ToListAsync();
             foreach (var target in targets)
             {
-                var distance = _distanceCalculate.CalculateDistance(agent.Location, target.Location);
-                if (distance < +200)
+                if (target.Location == null)
                 {
-                    CreateMission(agent, target);
+                    continue;
+                }
+                var distance = _distanceCalculate.CalculateDistance(agent.Location, target.Location);
+                if (distance < 200)
+                {
+                   await CreateMission(agent, target);
                 }
             }
         }
-        public void CalculateMissionT(Target target)
+        public async Task CalculateMissionT(Target target)
         {
-            var agents = _context.Agents.ToList();
+            //var agents = await _context.Agents.ToListAsync();
+            var agents = await _context.Agents.Include(t => t.Location)?.ToListAsync();
             foreach (var agent in agents)
             {
-                var distance = _distanceCalculate.CalculateDistance(agent.Location, target.Location);
-                if (distance < +200)
+                if(agent.Location == null)
                 {
-                    CreateMission(agent, target);
+                    continue;
+                }
+                var distance = _distanceCalculate.CalculateDistance(agent.Location, target.Location);
+                if (distance < 200)
+                {
+                   await CreateMission(agent, target);
                 }
             }
         }
-        private void CreateMission(Agent agent, Target target)
+        private async Task CreateMission(Agent agent, Target target)
         {
             var mission = new Mission
             {
@@ -59,10 +71,10 @@ namespace Mosad1.Models
                 TargetID = target.ID,
                 TimeLeft = double.MaxValue,
                 ExecutionTime = TimeOnly.MinValue,
-                Status = StatusMission.Ready
+                Status = StatusMission.InProgress
             };
             this._context.Missions.Add(mission);
-            this._context.SaveChangesAsync();
+             await this._context.SaveChangesAsync();
         }
     }
 

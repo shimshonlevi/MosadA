@@ -2,8 +2,8 @@
 {
     public enum StatusMission
     {
-        Ready,
-       Assigned,
-       Finished
+        Proposal,
+        InProgress,
+        Completed
     }
 }

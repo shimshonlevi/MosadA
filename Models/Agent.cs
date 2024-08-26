@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Mosad1.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mosad1.Models
 {
@@ -10,6 +11,6 @@ namespace Mosad1.Models
         public string Alias { get; set; }
 
         public Location ? Location { get; set; }
-        public string? Status { get; set; }
+        public StatusAgent? Status { get; set; }
     }
 }

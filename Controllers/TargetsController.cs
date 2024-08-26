@@ -15,11 +15,13 @@ namespace Mosad1.Controllers
     public class TargetsController : ControllerBase
     {
         private readonly Mosad1Context _context;
+        private readonly missonServis _missonServis;
         //private DirectionServis _directionServis;
 
-        public TargetsController(Mosad1Context context)
+        public TargetsController(Mosad1Context context, missonServis missonServis)
         {
             _context = context;
+            this._missonServis = missonServis;
             //_directionServis = directionServis;
         }
 
@@ -58,12 +60,22 @@ namespace Mosad1.Controllers
             var targets = await _context.Targets.Include(t => t.Location)?.ToArrayAsync();
             Target target = await _context.Targets.FindAsync(id);
             target.Location = location;
+            await Task.Run(async () =>
+            {
+
+                await this._missonServis.CalculateMissionT(target);
+            });
+                
+                
             
+
+
             _context.Update(target);
            
 
             try
             {
+              
                 await _context.SaveChangesAsync();
       
             }
@@ -129,6 +141,7 @@ namespace Mosad1.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await this._missonServis.CalculateMissionT(target);
             }
             catch (DbUpdateConcurrencyException)
             {

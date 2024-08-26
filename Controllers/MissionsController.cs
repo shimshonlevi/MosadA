@@ -53,24 +53,24 @@ namespace Mosad1.Controllers
             if (mission == null)
             {
                 status = StatusCodes.Status404NotFound;
-                return StatusCode(status, HttpUtils.Response(status, "mission not found"));
+                return NotFound(HttpUtils.Response(status, "mission not found"));
             }
-            mission.StatusMission = StatusMission.Assigned;
+            mission.Status = StatusMission.InProgress;
             _context.Missions.Update(mission);
             await _context.SaveChangesAsync();
             status = StatusCodes.Status200OK;
             return StatusCode(status, HttpUtils.Response(status, new { mission = mission }));
         }
 
-        [HttpPost("/missions/update")]
+        [HttpPost("update")]
         public async Task<IActionResult> UpdateTimeLeft()
         {
             int status = StatusCodes.Status200OK;
-            var missions = await _context.Missions.ToArrayAsync();
+            var missions = await _context.Missions.ToListAsync();
             foreach (Mission mission in missions)
             {
                 var agent = await _context.Agents.Include(a => a.Location).FirstOrDefaultAsync(a => a.ID == mission.AgentID);
-                var target = await _context.Targets.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == mission.AgentID);
+                var target = await _context.Targets.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == mission.TargetID);
                 if (agent == null || target == null)
                 {
                     return StatusCode(StatusCodes.Status404NotFound, "Agent or Target not found for mission");
