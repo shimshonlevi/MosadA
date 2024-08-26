@@ -6,6 +6,7 @@ using AgentManagementAPI.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Mosad1.Data;
 using Mosad1.Enums;
 using Mosad1.Models;
@@ -18,11 +19,13 @@ namespace Mosad1.Controllers
     {
         private readonly Mosad1Context _context;
         private readonly missonServis _missionService;
+        private readonly DistanceCalculate _distanceCalculate;
 
-        public MissionsController(Mosad1Context context, missonServis missionService)
+        public MissionsController(Mosad1Context context, missonServis missionService, DistanceCalculate distanceCalculate)
         {
             _context = context;
             _missionService = missionService;
+            _distanceCalculate = distanceCalculate;
         }
 
         // GET: api/Missions
@@ -46,7 +49,7 @@ namespace Mosad1.Controllers
             return mission;
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> AgentToMission(int id)
+        public async Task<IActionResult> AgentToMission(int id,StatusMission statusMission)
         {
             int status;
             Mission? mission = await _context.Missions.FindAsync(id);
@@ -55,11 +58,13 @@ namespace Mosad1.Controllers
                 status = StatusCodes.Status404NotFound;
                 return NotFound(HttpUtils.Response(status, "mission not found"));
             }
+            var agent = await _context.Agents.Include(a => a.Location).FirstOrDefaultAsync(a => a.ID == mission.AgentID);
+            agent.Status = StatusAgent.InActive;
             mission.Status = StatusMission.InProgress;
             _context.Missions.Update(mission);
             await _context.SaveChangesAsync();
             status = StatusCodes.Status200OK;
-            return StatusCode(status, HttpUtils.Response(status, new { mission = mission }));
+            return StatusCode(status, HttpUtils.Response(status, new { mission = mission.StatusMission }));
         }
 
         [HttpPost("update")]
@@ -69,14 +74,38 @@ namespace Mosad1.Controllers
             var missions = await _context.Missions.ToListAsync();
             foreach (Mission mission in missions)
             {
-                var agent = await _context.Agents.Include(a => a.Location).FirstOrDefaultAsync(a => a.ID == mission.AgentID);
-                var target = await _context.Targets.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == mission.TargetID);
-                if (agent == null || target == null)
+                if (mission.Status != StatusMission.InProgress)
                 {
-                    return StatusCode(StatusCodes.Status404NotFound, "Agent or Target not found for mission");
+                    continue;
                 }
-                mission.TimeLeft = this._missionService.GetDistance(agent.Location, target.Location);
-                await this._context.SaveChangesAsync();
+
+                    var agent = await _context.Agents.Include(a => a.Location).FirstOrDefaultAsync(a => a.ID == mission.AgentID);
+                    var target = await _context.Targets.Include(t => t.Location).FirstOrDefaultAsync(t => t.ID == mission.TargetID);
+                    if (agent == null || target == null)
+                    {
+                        return StatusCode(StatusCodes.Status404NotFound, "Agent or Target not found for mission");
+                    }
+                    mission.TimeLeft = _distanceCalculate.CalculateDistance(agent.Location, target.Location);
+                    string MoveDirection = this._missionService.MovingDirection(agent.Location, target.Location);
+                    if (MoveDirection.IsNullOrEmpty())
+                    {
+                        agent.Status = StatusAgent.Dormant;
+                        target.status = StatusTarget.Eliminated;
+                        target.Location = null;
+                        mission.Status = StatusMission.Completed;
+                        this._context.Agents.Update(agent);
+                        this._context.Targets.Update(target);
+                        this._context.Missions.Update(mission);
+                    }
+                    else
+                    {
+                        agent.Location = DirectionServis.moveDurection(agent.Location, new Direction { direction = MoveDirection });
+                        this._context.Agents.Update(agent);
+                    }
+                    await this._context.SaveChangesAsync();
+
+                
+               
             }
             return StatusCode(
                 status,

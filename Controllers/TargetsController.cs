@@ -60,11 +60,11 @@ namespace Mosad1.Controllers
             var targets = await _context.Targets.Include(t => t.Location)?.ToArrayAsync();
             Target target = await _context.Targets.FindAsync(id);
             target.Location = location;
-            await Task.Run(async () =>
-            {
+            //await Task.Run(async () =>
+            //{
 
-                await this._missonServis.CalculateMissionT(target);
-            });
+            //    await this._missonServis.CalculateMissionT(target);
+            //});
                 
                 
             
@@ -141,7 +141,7 @@ namespace Mosad1.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                await this._missonServis.CalculateMissionT(target);
+                //await this._missonServis.CalculateMissionT(target);
             }
             catch (DbUpdateConcurrencyException)
             {

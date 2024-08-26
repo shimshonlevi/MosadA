@@ -23,10 +23,10 @@ namespace Mosad1.Models
 
 
         }
-        public double GetDistance(Location location1, Location location2)
-        {
-            return _distanceCalculate.CalculateDistance(location1, location2);
-        }
+        //public double GetDistance(Location location1, Location location2)
+        //{
+        //    return _distanceCalculate.CalculateDistance(location1, location2);
+        //}
       
         public async Task CalculateMissionA(Agent agent)
         {
@@ -59,22 +59,39 @@ namespace Mosad1.Models
                 var distance = _distanceCalculate.CalculateDistance(agent.Location, target.Location);
                 if (distance < 200)
                 {
-                   await CreateMission(agent, target);
+                    bool missionExists =  _context.Missions.Any(m => m.AgentID == agent.ID && m.TargetID == target.ID);
+                    if (!missionExists)
+                    {
+
+                        await CreateMission(agent, target);
+                    }
                 }
             }
         }
         private async Task CreateMission(Agent agent, Target target)
         {
+            
             var mission = new Mission
             {
                 AgentID = agent.ID,
                 TargetID = target.ID,
                 TimeLeft = double.MaxValue,
                 ExecutionTime = TimeOnly.MinValue,
-                Status = StatusMission.InProgress
+                Status = StatusMission.Proposal,
             };
             this._context.Missions.Add(mission);
              await this._context.SaveChangesAsync();
+        }
+        public string MovingDirection(Location agentLoc, Location targetLoc)
+        {
+            int dirX = targetLoc.x - agentLoc.x;
+            int dirY = targetLoc.y - agentLoc.y;
+            string dir = "";
+            if (dirY < 0) { dir += "n"; }
+            if (dirY > 0) { dir += "s"; }
+            if (dirX > 0) { dir += "e"; }
+            if (dirX < 0) { dir += "w"; }
+            return dir;
         }
     }
 

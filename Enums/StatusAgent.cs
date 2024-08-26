@@ -3,6 +3,6 @@
     public enum StatusAgent
     {
        Dormant,
-       IinActivity
+       InActive
     }
 }

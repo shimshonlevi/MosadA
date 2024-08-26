@@ -16,7 +16,7 @@ namespace Mosad1.Models
         public int TargetID { get; set; }
 
         public TimeOnly ExecutionTime { get; set; }
-        public double TimeLeft { get; set; }
-        public StatusMission Status { get; set; }
+        public double? TimeLeft { get; set; }
+        public StatusMission? Status { get; set; } = StatusMission.Proposal;
     }
 }
