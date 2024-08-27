@@ -13,7 +13,7 @@ using Mosad1.Models;
 
 namespace Mosad1.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class MissionsController : ControllerBase
     {
